@@ -21,6 +21,23 @@ jobs:
             --template-file template.yml \
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
+
+  create_inventory:
+    docker: 
+      - image: amazon/aws-cli
+    steps:
+      - run: echo [all] >> ~/inventory
+      - run: 
+          name: "Create Inventory File"
+          command: |
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters Name=tag:Name,Values=udacity_project_instance \
+            --output text > ~/inventory
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - inventory
             
   configure_infrastructure: 
     docker:
@@ -34,14 +51,18 @@ jobs:
           command: |
             # Install Ansible
             apk add --update ansible
-    
+      - attach_workspace:
+          at: ~/
       - run:
           name: Run Playbook and Configure server
           command: |
             # Your command
-            ansible-playbook -i [inventory-file] [playbook-file]
+            ansible-playbook -i ~/inventory main.yml
 
 workflows:
-  say-hello-workflow:
+  automatic-pipline-workflow:
     jobs:
       - create_infrastructure
+      - create_inventory
+      - configure_infrastructure
+
