@@ -1,4 +1,4 @@
-   ---
+---
  # Exercise for setting up a web server in an EC
  - name: Exercise for setting up a web server in an EC 
    hosts: all
