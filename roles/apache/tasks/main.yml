@@ -1,8 +1,8 @@
 - name: "Create Directory"
   file:
-    path:~/web
+    path: ~/web
     state: directory
-
+    
 - name: "Install Apache2"
   become: true
   apt:
