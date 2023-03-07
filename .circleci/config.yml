@@ -12,6 +12,7 @@ jobs:
       - image: amazon/aws-cli
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    
     steps:
       - checkout
       - run:
@@ -24,8 +25,15 @@ jobs:
 
   create_inventory:
     docker: 
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
+
     steps:
+      - checkout
+      - run:
+          name: Install tar utility
+          command: |
+            yum install -y tar gzip
+            
       - run: echo [all] >> ~/inventory
       - run: 
           name: "Create Inventory File"
