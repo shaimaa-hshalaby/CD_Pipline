@@ -65,6 +65,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: solve uprotected public key error
+          command: sudo chmod 600 udacity_project_private_key.pem
+      - run:
           name: Run Playbook and Configure server
           command: 
             # Your command
