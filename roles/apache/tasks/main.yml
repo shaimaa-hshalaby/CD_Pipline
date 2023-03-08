@@ -12,7 +12,7 @@
 
 - name: "Install index.js"
   template:
-    src: index.js
+    src: files/index.js
     dest: ~/web/index.js
     backup: yes
 
