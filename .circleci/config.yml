@@ -66,7 +66,7 @@ jobs:
           at: ~/
       - run:
           name: solve uprotected public key error
-          command: sudo chmod 600 udacity_project_private_key.pem
+          command: chmod 600 udacity_project_private_key.pem
       - run:
           name: Run Playbook and Configure server
           command: 
@@ -77,10 +77,10 @@ jobs:
 workflows:
   automatic-pipline-workflow:
     jobs:
-      - create_infrastructure
-      - create_inventory:
-         requires:
-           - "create_infrastructure"
+ #     - create_infrastructure
+      - create_inventory
+ #        requires:
+ #          - "create_infrastructure"
       - configure_infrastructure:
          requires:
            - "create_inventory"
