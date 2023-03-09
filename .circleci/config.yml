@@ -61,8 +61,10 @@ jobs:
           name: Install Ansible
           command: |
             # Install Ansible
-            apk add --update ansible
+            apk add --no-cache tar gzip
+            pip install ansible awscli
             apk add openssh-client
+  #          apk add --update ansible
       - attach_workspace:
           at: ~/
       #- run:
