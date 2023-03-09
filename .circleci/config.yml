@@ -80,10 +80,10 @@ jobs:
 workflows:
   automatic-pipline-workflow:
     jobs:
- #     - create_infrastructure
-      - create_inventory
- #        requires:
- #          - "create_infrastructure"
+      - create_infrastructure
+      - create_inventory:
+         requires:
+           - "create_infrastructure"
       - configure_infrastructure:
          requires:
            - "create_inventory"
