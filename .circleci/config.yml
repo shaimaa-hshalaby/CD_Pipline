@@ -43,11 +43,11 @@ jobs:
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:Name,Values=udacity_project_instance \
-            --output text > ~/inventory
+            --output text > ~/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - inventory
+            - inventory.txt
             
             
   configure_infrastructure: 
@@ -55,8 +55,8 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
- #     - add_ssh_keys:
-#        fingerprints: ["ff:d7:06:52:b4:a6:96:6d:86:b0:f3:9a:e7:44:64:f5"] 
+      - add_ssh_keys:
+          fingerprints: ["ff:d7:06:52:b4:a6:96:6d:86:b0:f3:9a:e7:44:64:f5"] 
       - run:
           name: Install Ansible
           command: |
@@ -64,14 +64,14 @@ jobs:
             apk add --update ansible
       - attach_workspace:
           at: ~/
-      - run:
-          name: solve uprotected public key error
-          command: chmod 600 udacity_project_private_key.pem
+      #- run:
+       #   name: solve uprotected public key error
+        #  command: chmod 600 udacity_project_private_key.pem
       - run:
           name: Run Playbook and Configure server
           command: 
             # Your command
-            ansible-playbook -i ~/inventory main.yml --private-key udacity_project_private_key.pem
+            ansible-playbook -i ~/inventory.txt main.yml
               
 
 workflows:
