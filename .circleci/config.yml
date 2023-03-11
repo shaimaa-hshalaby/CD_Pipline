@@ -67,24 +67,45 @@ jobs:
   #          apk add --update ansible
       - attach_workspace:
           at: ~/
-      #- run:
-       #   name: solve uprotected public key error
-        #  command: chmod 600 udacity_project_private_key.pem
+
       - run:
           name: Run Playbook and Configure server
           command: 
             # Your command
             ansible-playbook -i ~/inventory.txt main.yml
+            
+  smoke_tests:
+    docker:
+      - image: alpine:latest
+
+    steps:
+      - steps:
+
+        #install curl to the image
+      - run: apk add --update curl
+      - run:
+          name: smoke_test
+          command: |
+            URL="https://blog.udacity.com/"
+            # Test if website exists
+            if curl -s --head ${URL} 
+            then
+              return 0
+            else
+              return 1
+            fi
+  
               
 
 workflows:
   automatic-pipline-workflow:
     jobs:
-      - create_infrastructure
-      - create_inventory:
-         requires:
-           - "create_infrastructure"
-      - configure_infrastructure:
-         requires:
-           - "create_inventory"
+      - smoke_tests
+      # - create_infrastructure
+      # - create_inventory:
+      #    requires:
+      #      - "create_infrastructure"
+      # - configure_infrastructure:
+      #    requires:
+      #      - "create_inventory"
 
