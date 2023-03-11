@@ -94,7 +94,7 @@ jobs:
       - checkout
       - run:
           name: simulate_error
-          command: return 1
+          command: return 0
 
       - destroy_infrastructure
 
