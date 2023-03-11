@@ -84,7 +84,7 @@ jobs:
       - run:
           name: smoke_test
           command: |
-            URL="https://blog333.udacity.com/"
+            URL="https://blog.udacity.com/"
             # Test if website exists
             if curl -s --head ${URL} 
             then
@@ -98,12 +98,15 @@ jobs:
 workflows:
   automatic-pipline-workflow:
     jobs:
-      - smoke_tests
-      # - create_infrastructure
-      # - create_inventory:
-      #    requires:
-      #      - "create_infrastructure"
-      # - configure_infrastructure:
-      #    requires:
-      #      - "create_inventory"
+      
+      - create_infrastructure
+      - create_inventory:
+         requires:
+           - "create_infrastructure"
+      - configure_infrastructure:
+         requires:
+           - "create_inventory"
+      - smoke_tests:
+          requires:
+            - "configure_infrastructure"
 
