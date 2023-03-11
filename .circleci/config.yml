@@ -35,7 +35,8 @@ jobs:
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
             
-      - run: sleep 1m
+      - run: sleep 2m
+      - destroy_infrastructure
 
   create_inventory:
     docker: 
@@ -60,7 +61,7 @@ jobs:
           root: ~/
           paths:
             - inventory.txt
-            
+      - destroy_infrastructure      
             
   configure_infrastructure: 
     docker:
@@ -85,20 +86,21 @@ jobs:
           command: 
             # Your command
             ansible-playbook -i ~/inventory.txt main.yml
-            
-  smoke_tests:
-    docker:
-      - image: amazon/aws-cli
-
-    steps:
-      - checkout
-      - run:
-          name: simulate_error
-          command: echo "Hello World"
-
       - destroy_infrastructure
 
-      #   #install curl to the image
+  # smoke_tests:
+  #   docker:
+  #     - image: amazon/aws-cli
+
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: simulate_error
+  #         command: echo "Hello World"
+
+  #     - destroy_infrastructure
+
+  #     #   #install curl to the image
       # - run: apk add --update curl
       # - run:
       #     name: smoke_test
