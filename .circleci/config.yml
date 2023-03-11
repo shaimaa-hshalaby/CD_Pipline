@@ -79,8 +79,6 @@ jobs:
       - image: alpine:latest
 
     steps:
-      - steps:
-
         #install curl to the image
       - run: apk add --update curl
       - run:
