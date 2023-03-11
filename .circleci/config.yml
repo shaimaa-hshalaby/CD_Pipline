@@ -97,9 +97,6 @@ jobs:
           command: return 1
 
       - destroy_infrastructure
-        
-
-
 
       #   #install curl to the image
       # - run: apk add --update curl
