@@ -14,16 +14,12 @@ commands:
             --region us-east-1
           when: on_fail
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+
 jobs:
   create_infrastructure:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  
     docker:
       - image: amazon/aws-cli
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     
     steps:
       - checkout
@@ -121,13 +117,13 @@ workflows:
     jobs:
       
       - create_infrastructure
-      # - create_inventory:
-      #    requires:
-      #      - "create_infrastructure"
-      # - configure_infrastructure:
-      #    requires:
-      #      - "create_inventory"
-      - smoke_tests:
+      - create_inventory:
           requires:
             - "create_infrastructure"
+      - configure_infrastructure:
+          requires:
+            - "create_inventory"
+      #- smoke_tests:
+          # requires:
+          #   - "create_infrastructure"
 
