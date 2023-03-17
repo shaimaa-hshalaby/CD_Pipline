@@ -133,13 +133,16 @@ workflows:
   automatic-pipline-workflow:
     jobs:
       
-      - create_infrastructure
-      - create_inventory:
-          requires:
-            - "create_infrastructure"
-      - configure_infrastructure:
-          requires:
-            - "create_inventory"
+      # - create_infrastructure
+      # - create_inventory:
+      #     requires:
+      #       - "create_infrastructure"
+      # - configure_infrastructure:
+      #     requires:
+      #       - "create_inventory"
+
+      - create_and_deploy_front_end
+
       #- smoke_tests:
           # requires:
           #   - "create_infrastructure"
