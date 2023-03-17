@@ -2,16 +2,24 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+
+commands:
+  destroy_infrastructure:
+    steps:
+      - run:
+          name: delete-stack
+          command: |
+           aws cloudformation delete-stack \
+            --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+            --region us-east-1
+          when: on_fail
+
+
 jobs:
   create_infrastructure:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  
     docker:
       - image: amazon/aws-cli
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     
     steps:
       - checkout
@@ -23,7 +31,8 @@ jobs:
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
             
-      - run: sleep 3m
+      - run: sleep 2m
+      - destroy_infrastructure
 
   create_inventory:
     docker: 
@@ -43,16 +52,18 @@ jobs:
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:Name,Values=udacity_project_instance \
-            --output text > ~/inventory
+            --output text > ~/inventory.txt
+      - run: cat ~/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - inventory
-            
-            
+            - inventory.txt
+      - destroy_infrastructure      
+ 
+
   configure_infrastructure: 
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.9-alpine3.16
     steps:
       - checkout
       - add_ssh_keys:
@@ -61,27 +72,75 @@ jobs:
           name: Install Ansible
           command: |
             # Install Ansible
-            apk add --update ansible
+            apk add --no-cache tar gzip
+            pip install ansible awscli
+            apk add openssh-client
+  #          apk add --update ansible
       - attach_workspace:
           at: ~/
-      - run:
-          name: solve uprotected public key error
-          command: sudo chmod 600 udacity_project_private_key.pem
+
       - run:
           name: Run Playbook and Configure server
           command: 
             # Your command
-            ansible-playbook -i ~/inventory main.yml --private-key udacity_project_private_key.pem
+            ansible-playbook -i ~/inventory.txt main.yml
+      - destroy_infrastructure
+
+  create_and_deploy_front_end:
+    docker: 
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: create s3 bucket
+          command:  |
+            aws cloudformation deploy \
+            --template-file create_bucket.yml \
+            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
+            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
+
+      - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
+
+  # smoke_tests:
+  #   docker:
+  #     - image: amazon/aws-cli
+
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: simulate_error
+  #         command: echo "Hello World"
+
+  #     - destroy_infrastructure
+
+  #     #   #install curl to the image
+      # - run: apk add --update curl
+      # - run:
+      #     name: smoke_test
+      #     command: |
+      #       URL="https://blog.udacity.com/"
+      #       # Test if website exists
+      #       if curl -s --head ${URL} 
+      #       then
+      #         return 0
+      #       else
+      #         return 1
+      #       fi
+  
               
 
 workflows:
   automatic-pipline-workflow:
     jobs:
+      
       - create_infrastructure
       - create_inventory:
-         requires:
-           - "create_infrastructure"
+          requires:
+            - "create_infrastructure"
       - configure_infrastructure:
-         requires:
-           - "create_inventory"
+          requires:
+            - "create_inventory"
+      #- smoke_tests:
+          # requires:
+          #   - "create_infrastructure"
 
