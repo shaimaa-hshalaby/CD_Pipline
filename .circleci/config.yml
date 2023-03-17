@@ -59,7 +59,8 @@ jobs:
           paths:
             - inventory.txt
       - destroy_infrastructure      
-            
+ 
+
   configure_infrastructure: 
     docker:
       - image: python:3.9-alpine3.16
@@ -84,6 +85,21 @@ jobs:
             # Your command
             ansible-playbook -i ~/inventory.txt main.yml
       - destroy_infrastructure
+
+  create_and_deploy_front_end:
+    docker: 
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: create s3 bucket
+          command:  |
+            aws cloudformation deploy \
+            --template-file create_bucket.yml \
+            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
+            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
+
+      - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
 
   # smoke_tests:
   #   docker:
